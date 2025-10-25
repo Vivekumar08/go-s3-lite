@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package node;
+option go_package = "internal/pb";
+
+message FileChunk {
+  string filename = 1;
+  bytes data = 2;
+}
+
+message UploadResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message DownloadRequest {
+  string filename = 1;
+}
+
+message DownloadResponse {
+  bytes data = 1;
+}
+
+service NodeService {
+  rpc UploadFile(stream FileChunk) returns (UploadResponse);
+  rpc DownloadFile(DownloadRequest) returns (stream DownloadResponse);
+}
