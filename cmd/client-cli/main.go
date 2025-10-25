@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/serialx/hashring"
 	pb "github.com/vivekumar08/go-s3-lite/internal/pb"
 	"google.golang.org/grpc"
 )
@@ -34,107 +35,159 @@ func main() {
 	}
 	defer conn.Close()
 	metaClient := pb.NewMetadataServiceClient(conn)
+	// Fetch all nodes
+	nodes := getAllNodes(metaClient)
+	if len(nodes) == 0 {
+		log.Fatalf("No nodes available")
+	}
+
+	// Create hashring for node selection
+	nodeMap := make(map[string]string)
+	nodeIDs := make([]string, 0, len(nodes))
+	for _, n := range nodes {
+		nodeIDs = append(nodeIDs, n.Id)
+		nodeMap[n.Id] = n.Address
+	}
+	ring := hashring.New(nodeIDs)
 
 	switch cmd {
 	case "upload":
-		uploadFile(metaClient, file)
+		uploadFile(file, nodeMap, ring)
 	case "download":
-		downloadFile(metaClient, file)
+		downloadFile(file, nodeMap, ring)
 	default:
 		fmt.Println("Unknown command:", cmd)
 	}
 }
 
-// --- Upload ---
-func uploadFile(metaClient pb.MetadataServiceClient, filename string) {
+// --- Get all nodes from metadata ---
+func getAllNodes(metaClient pb.MetadataServiceClient) []*pb.NodeInfo {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := metaClient.ListNodes(ctx, &pb.ListNodesRequest{})
+	if err != nil {
+		log.Fatalf("Failed to list nodes: %v", err)
+	}
+	return resp.Nodes
+}
+
+// --- Upload with retry ---
+func uploadFile(filename string, nodeMap map[string]string, ring *hashring.HashRing) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatalf("Failed to read file: %v", err)
 	}
 
+	// Select node using hashring
+	_, ok := ring.GetNode(filename)
+	if !ok {
+		log.Fatalf("Failed to select node from hashring")
+	}
+
+	tryNodes := make([]string, len(nodeMap))
+	i := 0
+	for k := range nodeMap {
+		tryNodes[i] = k
+		i++
+	}
+
+	// Try nodes in order until success
+	for _, nid := range tryNodes {
+		addr := nodeMap[nid]
+		fmt.Printf("Uploading '%s' to node %s (%s)...\n", filename, nid, addr)
+		if doUpload(addr, filename, data) {
+			fmt.Println("Upload successful!")
+			return
+		}
+		fmt.Printf("Failed on node %s, trying next...\n", nid)
+	}
+
+	log.Fatalf("Upload failed on all nodes")
+}
+
+func doUpload(addr, filename string, data []byte) bool {
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		return false
+	}
+	defer conn.Close()
+
+	client := pb.NewNodeServiceClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Ask metadata which node to use
-	resp, err := metaClient.GetNodeForFile(ctx, &pb.GetNodeRequest{
-		FileKey: filename,
-	})
+	stream, err := client.UploadFile(ctx)
 	if err != nil {
-		log.Fatalf("Failed to get node for file: %v", err)
+		return false
 	}
 
-	if resp.Node == nil {
-		log.Fatalf("No node available to store file")
-	}
-
-	nodeAddr := resp.Node.Address
-	fmt.Printf("Uploading '%s' to node %s...\n", filename, nodeAddr)
-
-	// Connect to node
-	nodeConn, err := grpc.Dial(nodeAddr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Failed to connect to node: %v", err)
-	}
-	defer nodeConn.Close()
-
-	nodeClient := pb.NewNodeServiceClient(nodeConn)
-
-	// Upload file
-	stream, err := nodeClient.UploadFile(context.Background())
-	if err != nil {
-		log.Fatalf("Failed to open upload stream: %v", err)
-	}
-
-	chunk := &pb.FileChunk{
+	err = stream.Send(&pb.FileChunk{
 		Filename: filename,
 		Data:     data,
-	}
-
-	if err := stream.Send(chunk); err != nil {
-		log.Fatalf("Failed to send file chunk: %v", err)
+	})
+	if err != nil {
+		return false
 	}
 
 	res, err := stream.CloseAndRecv()
-	if err != nil {
-		log.Fatalf("Failed to receive upload response: %v", err)
+	if err != nil || !res.Success {
+		return false
 	}
-
-	fmt.Printf("Upload success: %v, message: %s\n", res.Success, res.Message)
+	return true
 }
 
-// --- Download ---
-func downloadFile(metaClient pb.MetadataServiceClient, filename string) {
+// --- Download with retry ---
+func downloadFile(filename string, nodeMap map[string]string, ring *hashring.HashRing) {
+	_, ok := ring.GetNode(filename)
+	if !ok {
+		log.Fatalf("Failed to select node from hashring")
+	}
+
+	tryNodes := make([]string, len(nodeMap))
+	i := 0
+	for k := range nodeMap {
+		tryNodes[i] = k
+		i++
+	}
+
+	var fileData []byte
+	for _, nid := range tryNodes {
+		addr := nodeMap[nid]
+		fmt.Printf("Downloading '%s' from node %s (%s)...\n", filename, nid, addr)
+		data, ok := doDownload(addr, filename)
+		if ok {
+			fileData = data
+			break
+		}
+		fmt.Printf("Failed on node %s, trying next...\n", nid)
+	}
+
+	if fileData == nil {
+		log.Fatalf("Download failed on all nodes")
+	}
+
+	outFile := "downloaded_" + filename
+	if err := ioutil.WriteFile(outFile, fileData, 0644); err != nil {
+		log.Fatalf("Failed to save file: %v", err)
+	}
+	fmt.Printf("Downloaded file saved as '%s'\n", outFile)
+}
+
+func doDownload(addr, filename string) ([]byte, bool) {
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		return nil, false
+	}
+	defer conn.Close()
+
+	client := pb.NewNodeServiceClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Ask metadata which node to use
-	resp, err := metaClient.GetNodeForFile(ctx, &pb.GetNodeRequest{
-		FileKey: filename,
-	})
+	stream, err := client.DownloadFile(ctx, &pb.DownloadRequest{Filename: filename})
 	if err != nil {
-		log.Fatalf("Failed to get node for file: %v", err)
-	}
-
-	if resp.Node == nil {
-		log.Fatalf("No node found for file: %s", filename)
-	}
-
-	nodeAddr := resp.Node.Address
-	fmt.Printf("Downloading '%s' from node %s...\n", filename, nodeAddr)
-
-	nodeConn, err := grpc.Dial(nodeAddr, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Failed to connect to node: %v", err)
-	}
-	defer nodeConn.Close()
-
-	nodeClient := pb.NewNodeServiceClient(nodeConn)
-
-	stream, err := nodeClient.DownloadFile(context.Background(), &pb.DownloadRequest{
-		Filename: filename,
-	})
-	if err != nil {
-		log.Fatalf("Failed to start download stream: %v", err)
+		return nil, false
 	}
 
 	var fileData []byte
@@ -146,11 +199,5 @@ func downloadFile(metaClient pb.MetadataServiceClient, filename string) {
 		fileData = append(fileData, chunk.Data...)
 	}
 
-	// Save file locally
-	outFile := "downloaded_" + filename
-	if err := ioutil.WriteFile(outFile, fileData, 0644); err != nil {
-		log.Fatalf("Failed to save file: %v", err)
-	}
-
-	fmt.Printf("Downloaded file saved as '%s'\n", outFile)
+	return fileData, true
 }
