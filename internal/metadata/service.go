@@ -95,3 +95,20 @@ func (s *Service) GetNodeForFile(ctx context.Context, req *pb.GetNodeRequest) (*
 		},
 	}, nil
 }
+
+// ListNodes returns all nodes currently in the cluster
+func (s *Service) ListNodes(ctx context.Context, req *pb.ListNodesRequest) (*pb.ListNodesResponse, error) {
+	nodes := make([]*pb.NodeInfo, 0)
+
+	// Iterate over nodes in your store / consistent hashing ring
+	for _, n := range s.store.AllNodes() { // assuming your NodeStore has AllNodes()
+		nodes = append(nodes, &pb.NodeInfo{
+			Id:      n.ID,
+			Address: n.Address,
+		})
+	}
+
+	return &pb.ListNodesResponse{
+		Nodes: nodes,
+	}, nil
+}

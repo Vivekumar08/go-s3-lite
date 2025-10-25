@@ -25,8 +25,14 @@ message GetNodeResponse {
   NodeInfo node = 1;
 }
 
+message ListNodesRequest {}
+message ListNodesResponse {
+  repeated NodeInfo nodes = 1;
+}
+
 service MetadataService {
   rpc RegisterNode(RegisterNodeRequest) returns (RegisterNodeResponse);
   rpc GetNodeForFile(GetNodeRequest) returns (GetNodeResponse);
+  rpc ListNodes(ListNodesRequest) returns (ListNodesResponse); 
 }
 

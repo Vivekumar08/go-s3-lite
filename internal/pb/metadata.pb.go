@@ -257,6 +257,86 @@ func (x *GetNodeResponse) GetNode() *NodeInfo {
 	return nil
 }
 
+type ListNodesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListNodesRequest) Reset() {
+	*x = ListNodesRequest{}
+	mi := &file_internal_pb_metadata_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListNodesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListNodesRequest) ProtoMessage() {}
+
+func (x *ListNodesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_pb_metadata_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListNodesRequest.ProtoReflect.Descriptor instead.
+func (*ListNodesRequest) Descriptor() ([]byte, []int) {
+	return file_internal_pb_metadata_proto_rawDescGZIP(), []int{5}
+}
+
+type ListNodesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Nodes         []*NodeInfo            `protobuf:"bytes,1,rep,name=nodes,proto3" json:"nodes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListNodesResponse) Reset() {
+	*x = ListNodesResponse{}
+	mi := &file_internal_pb_metadata_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListNodesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListNodesResponse) ProtoMessage() {}
+
+func (x *ListNodesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_pb_metadata_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListNodesResponse.ProtoReflect.Descriptor instead.
+func (*ListNodesResponse) Descriptor() ([]byte, []int) {
+	return file_internal_pb_metadata_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ListNodesResponse) GetNodes() []*NodeInfo {
+	if x != nil {
+		return x.Nodes
+	}
+	return nil
+}
+
 var File_internal_pb_metadata_proto protoreflect.FileDescriptor
 
 const file_internal_pb_metadata_proto_rawDesc = "" +
@@ -273,10 +353,14 @@ const file_internal_pb_metadata_proto_rawDesc = "" +
 	"\x0eGetNodeRequest\x12\x19\n" +
 	"\bfile_key\x18\x01 \x01(\tR\afileKey\"9\n" +
 	"\x0fGetNodeResponse\x12&\n" +
-	"\x04node\x18\x01 \x01(\v2\x12.metadata.NodeInfoR\x04node2\xa7\x01\n" +
+	"\x04node\x18\x01 \x01(\v2\x12.metadata.NodeInfoR\x04node\"\x12\n" +
+	"\x10ListNodesRequest\"=\n" +
+	"\x11ListNodesResponse\x12(\n" +
+	"\x05nodes\x18\x01 \x03(\v2\x12.metadata.NodeInfoR\x05nodes2\xed\x01\n" +
 	"\x0fMetadataService\x12M\n" +
 	"\fRegisterNode\x12\x1d.metadata.RegisterNodeRequest\x1a\x1e.metadata.RegisterNodeResponse\x12E\n" +
-	"\x0eGetNodeForFile\x12\x18.metadata.GetNodeRequest\x1a\x19.metadata.GetNodeResponseB\rZ\vinternal/pbb\x06proto3"
+	"\x0eGetNodeForFile\x12\x18.metadata.GetNodeRequest\x1a\x19.metadata.GetNodeResponse\x12D\n" +
+	"\tListNodes\x12\x1a.metadata.ListNodesRequest\x1a\x1b.metadata.ListNodesResponseB\rZ\vinternal/pbb\x06proto3"
 
 var (
 	file_internal_pb_metadata_proto_rawDescOnce sync.Once
@@ -290,26 +374,31 @@ func file_internal_pb_metadata_proto_rawDescGZIP() []byte {
 	return file_internal_pb_metadata_proto_rawDescData
 }
 
-var file_internal_pb_metadata_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_internal_pb_metadata_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_internal_pb_metadata_proto_goTypes = []any{
 	(*NodeInfo)(nil),             // 0: metadata.NodeInfo
 	(*RegisterNodeRequest)(nil),  // 1: metadata.RegisterNodeRequest
 	(*RegisterNodeResponse)(nil), // 2: metadata.RegisterNodeResponse
 	(*GetNodeRequest)(nil),       // 3: metadata.GetNodeRequest
 	(*GetNodeResponse)(nil),      // 4: metadata.GetNodeResponse
+	(*ListNodesRequest)(nil),     // 5: metadata.ListNodesRequest
+	(*ListNodesResponse)(nil),    // 6: metadata.ListNodesResponse
 }
 var file_internal_pb_metadata_proto_depIdxs = []int32{
 	0, // 0: metadata.RegisterNodeRequest.node:type_name -> metadata.NodeInfo
 	0, // 1: metadata.GetNodeResponse.node:type_name -> metadata.NodeInfo
-	1, // 2: metadata.MetadataService.RegisterNode:input_type -> metadata.RegisterNodeRequest
-	3, // 3: metadata.MetadataService.GetNodeForFile:input_type -> metadata.GetNodeRequest
-	2, // 4: metadata.MetadataService.RegisterNode:output_type -> metadata.RegisterNodeResponse
-	4, // 5: metadata.MetadataService.GetNodeForFile:output_type -> metadata.GetNodeResponse
-	4, // [4:6] is the sub-list for method output_type
-	2, // [2:4] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0, // 2: metadata.ListNodesResponse.nodes:type_name -> metadata.NodeInfo
+	1, // 3: metadata.MetadataService.RegisterNode:input_type -> metadata.RegisterNodeRequest
+	3, // 4: metadata.MetadataService.GetNodeForFile:input_type -> metadata.GetNodeRequest
+	5, // 5: metadata.MetadataService.ListNodes:input_type -> metadata.ListNodesRequest
+	2, // 6: metadata.MetadataService.RegisterNode:output_type -> metadata.RegisterNodeResponse
+	4, // 7: metadata.MetadataService.GetNodeForFile:output_type -> metadata.GetNodeResponse
+	6, // 8: metadata.MetadataService.ListNodes:output_type -> metadata.ListNodesResponse
+	6, // [6:9] is the sub-list for method output_type
+	3, // [3:6] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_internal_pb_metadata_proto_init() }
@@ -323,7 +412,7 @@ func file_internal_pb_metadata_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_internal_pb_metadata_proto_rawDesc), len(file_internal_pb_metadata_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

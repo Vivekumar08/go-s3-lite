@@ -12,6 +12,7 @@ import (
 	"github.com/vivekumar08/go-s3-lite/internal/metadata"
 	pb "github.com/vivekumar08/go-s3-lite/internal/pb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -33,10 +34,10 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterMetadataServiceServer(grpcServer, svc)
+	reflection.Register(grpcServer)
 
 	log.Printf("Metadata server listening on %s (replication=%d)", addr, *replication)
 
-	// graceful shutdown handling
 	go func() {
 		if err := grpcServer.Serve(lis); err != nil {
 			log.Fatalf("gRPC serve failed: %v", err)

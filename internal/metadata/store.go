@@ -63,3 +63,15 @@ func (s *NodeStore) ResponsibleNode(key string) hashing.Node {
 	// ring.GetNode uses its own internal lock
 	return s.ring.GetNode(key)
 }
+
+// AllNodes returns a slice of all nodes
+func (s *NodeStore) AllNodes() []hashing.Node {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	nodes := make([]hashing.Node, 0, len(s.nodes))
+	for _, n := range s.nodes {
+		nodes = append(nodes, n)
+	}
+	return nodes
+}

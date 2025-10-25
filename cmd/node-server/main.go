@@ -10,6 +10,7 @@ import (
 	"github.com/vivekumar08/go-s3-lite/internal/node"
 	pb "github.com/vivekumar08/go-s3-lite/internal/pb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -56,6 +57,8 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterNodeServiceServer(grpcServer, ns)
+	reflection.Register(grpcServer)
+
 	fmt.Printf("Node server listening on %s\n", nodeAddress)
 
 	if err := grpcServer.Serve(lis); err != nil {
