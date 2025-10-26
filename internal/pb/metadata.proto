@@ -30,9 +30,17 @@ message ListNodesResponse {
   repeated NodeInfo nodes = 1;
 }
 
+message GetReplicasRequest { string file_key = 1; int32 replicas = 2; }
+message GetReplicasResponse { repeated NodeInfo nodes = 1; }
+
+message HeartbeatRequest { string node_id = 1; }
+message HeartbeatResponse { bool ok = 1; }
+
 service MetadataService {
   rpc RegisterNode(RegisterNodeRequest) returns (RegisterNodeResponse);
   rpc GetNodeForFile(GetNodeRequest) returns (GetNodeResponse);
+  rpc GetReplicasForFile(GetReplicasRequest) returns (GetReplicasResponse);
   rpc ListNodes(ListNodesRequest) returns (ListNodesResponse); 
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
 }
 

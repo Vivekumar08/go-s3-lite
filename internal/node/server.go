@@ -1,11 +1,11 @@
 package node
 
 import (
+	"context"
 	"fmt"
-	"io"
-	"log"
 
 	pb "github.com/vivekumar08/go-s3-lite/internal/pb"
+	"google.golang.org/grpc"
 )
 
 type NodeServer struct {
@@ -13,44 +13,43 @@ type NodeServer struct {
 	storage *FileStorage
 }
 
-// NewNodeServer creates a new NodeServer
-func NewNodeServer(storage *FileStorage) *NodeServer {
-	return &NodeServer{storage: storage}
-}
-
-// UploadFile receives a stream of file chunks
-func (s *NodeServer) UploadFile(stream pb.NodeService_UploadFileServer) error {
-	var filename string
-	for {
-		chunk, err := stream.Recv()
-		if err == io.EOF {
-			// finished receiving
-			log.Printf("Upload finished: %s", filename)
-			return stream.SendAndClose(&pb.UploadResponse{
-				Success: true,
-				Message: "uploaded",
-			})
-		}
-		if err != nil {
-			return err
-		}
-
-		filename = chunk.Filename
-		if err := s.storage.SaveFile(chunk.Filename, chunk.Data); err != nil {
-			return fmt.Errorf("failed to save file: %v", err)
-		}
+func NewNodeServer(basePath string) *NodeServer {
+	return &NodeServer{
+		storage: NewFileStorage(basePath),
 	}
 }
 
+func (s *NodeServer) UploadFile(ctx context.Context, req *pb.UploadRequest) (*pb.UploadResponse, error) {
+	if req.FileKey == "" || len(req.Data) == 0 {
+		return &pb.UploadResponse{
+			Success: false,
+			Message: "invalid file key or data",
+		}, nil
+	}
+
+	err := s.storage.SaveFile(req.FileKey, req.Data)
+	if err != nil {
+		return &pb.UploadResponse{
+			Success: false,
+			Message: fmt.Sprintf("failed to save file: %v", err),
+		}, nil
+	}
+
+	return &pb.UploadResponse{
+		Success: true,
+		Message: "File uploaded successfully",
+	}, nil
+}
+
 // DownloadFile streams file data to client
-func (s *NodeServer) DownloadFile(req *pb.DownloadRequest, stream pb.NodeService_DownloadFileServer) error {
+func (s *NodeServer) DownloadFile(req *pb.DownloadRequest, stream grpc.ServerStreamingServer[pb.DownloadResponse]) error {
 	data, err := s.storage.ReadFile(req.Filename)
 	if err != nil {
 		return err
 	}
 
-	chunk := &pb.DownloadResponse{Data: data}
-	if err := stream.Send(chunk); err != nil {
+	chunk := pb.DownloadResponse{Data: data}
+	if err := stream.Send(&chunk); err != nil {
 		return err
 	}
 	return nil

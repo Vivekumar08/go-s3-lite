@@ -19,9 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MetadataService_RegisterNode_FullMethodName   = "/metadata.MetadataService/RegisterNode"
-	MetadataService_GetNodeForFile_FullMethodName = "/metadata.MetadataService/GetNodeForFile"
-	MetadataService_ListNodes_FullMethodName      = "/metadata.MetadataService/ListNodes"
+	MetadataService_RegisterNode_FullMethodName       = "/metadata.MetadataService/RegisterNode"
+	MetadataService_GetNodeForFile_FullMethodName     = "/metadata.MetadataService/GetNodeForFile"
+	MetadataService_GetReplicasForFile_FullMethodName = "/metadata.MetadataService/GetReplicasForFile"
+	MetadataService_ListNodes_FullMethodName          = "/metadata.MetadataService/ListNodes"
+	MetadataService_Heartbeat_FullMethodName          = "/metadata.MetadataService/Heartbeat"
 )
 
 // MetadataServiceClient is the client API for MetadataService service.
@@ -30,7 +32,9 @@ const (
 type MetadataServiceClient interface {
 	RegisterNode(ctx context.Context, in *RegisterNodeRequest, opts ...grpc.CallOption) (*RegisterNodeResponse, error)
 	GetNodeForFile(ctx context.Context, in *GetNodeRequest, opts ...grpc.CallOption) (*GetNodeResponse, error)
+	GetReplicasForFile(ctx context.Context, in *GetReplicasRequest, opts ...grpc.CallOption) (*GetReplicasResponse, error)
 	ListNodes(ctx context.Context, in *ListNodesRequest, opts ...grpc.CallOption) (*ListNodesResponse, error)
+	Heartbeat(ctx context.Context, in *HeartbeatRequest, opts ...grpc.CallOption) (*HeartbeatResponse, error)
 }
 
 type metadataServiceClient struct {
@@ -61,10 +65,30 @@ func (c *metadataServiceClient) GetNodeForFile(ctx context.Context, in *GetNodeR
 	return out, nil
 }
 
+func (c *metadataServiceClient) GetReplicasForFile(ctx context.Context, in *GetReplicasRequest, opts ...grpc.CallOption) (*GetReplicasResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetReplicasResponse)
+	err := c.cc.Invoke(ctx, MetadataService_GetReplicasForFile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *metadataServiceClient) ListNodes(ctx context.Context, in *ListNodesRequest, opts ...grpc.CallOption) (*ListNodesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListNodesResponse)
 	err := c.cc.Invoke(ctx, MetadataService_ListNodes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *metadataServiceClient) Heartbeat(ctx context.Context, in *HeartbeatRequest, opts ...grpc.CallOption) (*HeartbeatResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(HeartbeatResponse)
+	err := c.cc.Invoke(ctx, MetadataService_Heartbeat_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +101,9 @@ func (c *metadataServiceClient) ListNodes(ctx context.Context, in *ListNodesRequ
 type MetadataServiceServer interface {
 	RegisterNode(context.Context, *RegisterNodeRequest) (*RegisterNodeResponse, error)
 	GetNodeForFile(context.Context, *GetNodeRequest) (*GetNodeResponse, error)
+	GetReplicasForFile(context.Context, *GetReplicasRequest) (*GetReplicasResponse, error)
 	ListNodes(context.Context, *ListNodesRequest) (*ListNodesResponse, error)
+	Heartbeat(context.Context, *HeartbeatRequest) (*HeartbeatResponse, error)
 	mustEmbedUnimplementedMetadataServiceServer()
 }
 
@@ -94,8 +120,14 @@ func (UnimplementedMetadataServiceServer) RegisterNode(context.Context, *Registe
 func (UnimplementedMetadataServiceServer) GetNodeForFile(context.Context, *GetNodeRequest) (*GetNodeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNodeForFile not implemented")
 }
+func (UnimplementedMetadataServiceServer) GetReplicasForFile(context.Context, *GetReplicasRequest) (*GetReplicasResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReplicasForFile not implemented")
+}
 func (UnimplementedMetadataServiceServer) ListNodes(context.Context, *ListNodesRequest) (*ListNodesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListNodes not implemented")
+}
+func (UnimplementedMetadataServiceServer) Heartbeat(context.Context, *HeartbeatRequest) (*HeartbeatResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Heartbeat not implemented")
 }
 func (UnimplementedMetadataServiceServer) mustEmbedUnimplementedMetadataServiceServer() {}
 func (UnimplementedMetadataServiceServer) testEmbeddedByValue()                         {}
@@ -154,6 +186,24 @@ func _MetadataService_GetNodeForFile_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MetadataService_GetReplicasForFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetReplicasRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MetadataServiceServer).GetReplicasForFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MetadataService_GetReplicasForFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MetadataServiceServer).GetReplicasForFile(ctx, req.(*GetReplicasRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _MetadataService_ListNodes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListNodesRequest)
 	if err := dec(in); err != nil {
@@ -168,6 +218,24 @@ func _MetadataService_ListNodes_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MetadataServiceServer).ListNodes(ctx, req.(*ListNodesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MetadataService_Heartbeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HeartbeatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MetadataServiceServer).Heartbeat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MetadataService_Heartbeat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MetadataServiceServer).Heartbeat(ctx, req.(*HeartbeatRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -188,8 +256,16 @@ var MetadataService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _MetadataService_GetNodeForFile_Handler,
 		},
 		{
+			MethodName: "GetReplicasForFile",
+			Handler:    _MetadataService_GetReplicasForFile_Handler,
+		},
+		{
 			MethodName: "ListNodes",
 			Handler:    _MetadataService_ListNodes_Handler,
+		},
+		{
+			MethodName: "Heartbeat",
+			Handler:    _MetadataService_Heartbeat_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

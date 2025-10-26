@@ -1,0 +1,4 @@
+db_path: "./meta.db"
+replication_factor: 3
+heartbeat_interval_seconds: 5
+node_ttl_seconds: 20

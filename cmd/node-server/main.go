@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -10,58 +11,51 @@ import (
 	"github.com/vivekumar08/go-s3-lite/internal/node"
 	pb "github.com/vivekumar08/go-s3-lite/internal/pb"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 func main() {
-	// Node configuration (in real system, read from env/config)
-	nodeID := "node-1"
-	nodeAddress := "127.0.0.1:6000"
-	metadataAddr := "127.0.0.1:50051"
-	storagePath := "./data/node-1"
+	nodeID := flag.String("id", "node-1", "node id")
+	addr := flag.String("addr", "127.0.0.1:6000", "node listen address")
+	metadataAddr := flag.String("metadata", "127.0.0.1:50051", "metadata addr")
+	dataDir := flag.String("data", "./data", "data directory")
+	flag.Parse()
 
-	// Connect to metadata server
-	conn, err := grpc.Dial(metadataAddr, grpc.WithInsecure())
+	// register with metadata
+	metaConn, err := grpc.Dial(*metadataAddr, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("failed to connect to metadata server: %v", err)
+		log.Fatalf("dial metadata: %v", err)
 	}
-	defer conn.Close()
+	metaClient := pb.NewMetadataServiceClient(metaConn)
 
-	metaClient := pb.NewMetadataServiceClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
-	regResp, err := metaClient.RegisterNode(ctx, &pb.RegisterNodeRequest{
-		Node: &pb.NodeInfo{
-			Id:      nodeID,
-			Address: nodeAddress,
-		},
+	_, err = metaClient.RegisterNode(ctx, &pb.RegisterNodeRequest{
+		Node: &pb.NodeInfo{Id: *nodeID, Address: *addr},
 	})
-
-	if err != nil || !regResp.Success {
-		log.Fatalf("node registration failed: %v", err)
-	}
-	fmt.Printf("✅ Node registered successfully: %s\n", nodeID)
-
-	// --- Start Node gRPC server ---
-	fs, err := node.NewFileStorage(storagePath)
 	if err != nil {
-		log.Fatalf("failed to init storage: %v", err)
+		log.Fatalf("register: %v", err)
 	}
+	fmt.Printf("registered node %s\n", *nodeID)
 
-	ns := node.NewNodeServer(fs)
-	lis, err := net.Listen("tcp", nodeAddress)
+	// start heartbeat goroutine
+	go func() {
+		t := time.NewTicker(5 * time.Second)
+		for range t.C {
+			_, _ = metaClient.Heartbeat(context.Background(), &pb.HeartbeatRequest{NodeId: *nodeID})
+		}
+	}()
+
+	// start node gRPC server
+	lis, err := net.Listen("tcp", *addr)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatalf("listen: %v", err)
 	}
-
 	grpcServer := grpc.NewServer()
-	pb.RegisterNodeServiceServer(grpcServer, ns)
-	reflection.Register(grpcServer)
+	pb.RegisterNodeServiceServer(grpcServer, node.NewNodeServer(*dataDir))
 
-	fmt.Printf("Node server listening on %s\n", nodeAddress)
-
+	fmt.Printf("node server listening on %s\n", *addr)
+	fmt.Printf("data directory: %s\n", *dataDir)
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("grpc serve failed: %v", err)
+		log.Fatalf("serve: %v", err)
 	}
 }

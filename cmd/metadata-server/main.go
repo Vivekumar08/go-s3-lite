@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/vivekumar08/go-s3-lite/internal/metadata"
 	pb "github.com/vivekumar08/go-s3-lite/internal/pb"
@@ -16,38 +17,41 @@ import (
 )
 
 func main() {
-	var (
-		port        = flag.Int("port", 50051, "metadata gRPC server port")
-		replication = flag.Int("replication", 3, "virtual nodes / replication factor for hashing ring")
-	)
+	port := flag.Int("port", 50051, "metadata port")
+	dbPath := flag.String("db", "./meta.db", "sqlite db path")
+	rep := flag.Int("replication", 3, "default replication factor")
 	flag.Parse()
 
-	addr := fmt.Sprintf(":%d", *port)
+	db, err := metadata.OpenDB(*dbPath)
+	if err != nil {
+		log.Fatalf("open db: %v", err)
+	}
+	store := metadata.NewNodeStoreWithDB(db, 100)
+	svc := metadata.NewService(db, store, *rep)
 
+	addr := fmt.Sprintf(":%d", *port)
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Fatalf("failed to listen on %s: %v", addr, err)
+		log.Fatalf("listen: %v", err)
 	}
-
-	store := metadata.NewNodeStore(*replication)
-	svc := metadata.NewService(store)
-
 	grpcServer := grpc.NewServer()
 	pb.RegisterMetadataServiceServer(grpcServer, svc)
 	reflection.Register(grpcServer)
 
-	log.Printf("Metadata server listening on %s (replication=%d)", addr, *replication)
+	stopCh := make(chan struct{})
+	svc.RunBackgroundWorkers(stopCh, 10*time.Second, 30*time.Second)
 
 	go func() {
+		log.Printf("metadata server listening %s", addr)
 		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("gRPC serve failed: %v", err)
+			log.Fatalf("serve: %v", err)
 		}
 	}()
 
-	// wait for signal
+	// graceful shutdown
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
 	<-ch
-	log.Printf("shutdown requested, stopping gRPC server...")
+	close(stopCh)
 	grpcServer.GracefulStop()
 }

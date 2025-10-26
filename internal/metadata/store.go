@@ -1,77 +1,77 @@
 package metadata
 
 import (
-	"errors"
 	"sync"
+	"time"
 
 	"github.com/vivekumar08/go-s3-lite/internal/hashing"
+	"gorm.io/gorm"
 )
 
-// ErrNodeExists returned when trying to add a node that already exists.
-var ErrNodeExists = errors.New("node already exists")
-
-// NodeStore is a threadsafe in-memory registry of active nodes.
 type NodeStore struct {
-	mu    sync.RWMutex
-	nodes map[string]hashing.Node // key: node ID
-	ring  *hashing.Ring
+	mu   sync.RWMutex
+	db   *gorm.DB
+	ring *hashing.Ring
 }
 
-// NewNodeStore creates a new NodeStore with a hashing ring.
-// replication parameter is forwarded to the ring constructor.
-func NewNodeStore(replication int) *NodeStore {
-	return &NodeStore{
-		nodes: make(map[string]hashing.Node),
-		ring:  hashing.NewRing(replication),
+func NewNodeStoreWithDB(db *gorm.DB, replication int) *NodeStore {
+	ns := &NodeStore{db: db, ring: hashing.NewRing(replication)}
+	// load active nodes from DB to ring
+	var models []NodeModel
+	_ = db.Find(&models).Error
+	for _, m := range models {
+		ns.ring.AddNode(hashing.Node{ID: m.ID, Address: m.Address})
 	}
+	return ns
 }
 
-// AddNode adds node to the store and ring
 func (s *NodeStore) AddNode(n hashing.Node) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	if _, ok := s.nodes[n.ID]; ok {
-		return ErrNodeExists
+	// upsert node model
+	now := time.Now()
+	model := NodeModel{ID: n.ID, Address: n.Address, LastSeen: now}
+	// GORM upsert via Save (works since primary key provided)
+	if err := s.db.Save(&model).Error; err != nil {
+		return err
 	}
-	s.nodes[n.ID] = n
 	s.ring.AddNode(n)
 	return nil
 }
 
-// GetNode returns a node by ID
-func (s *NodeStore) GetNode(id string) (hashing.Node, bool) {
+func (s *NodeStore) AllNodes() []hashing.Node {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	n, ok := s.nodes[id]
-	return n, ok
-}
-
-// GetNodes returns a snapshot of all nodes
-func (s *NodeStore) GetNodes() []hashing.Node {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	out := make([]hashing.Node, 0, len(s.nodes))
-	for _, n := range s.nodes {
-		out = append(out, n)
+	var models []NodeModel
+	_ = s.db.Find(&models).Error
+	out := make([]hashing.Node, 0, len(models))
+	for _, m := range models {
+		out = append(out, hashing.Node{ID: m.ID, Address: m.Address})
 	}
 	return out
 }
 
-// ResponsibleNode returns the node responsible for the given key (via ring)
-func (s *NodeStore) ResponsibleNode(key string) hashing.Node {
-	// ring.GetNode uses its own internal lock
-	return s.ring.GetNode(key)
+func (s *NodeStore) ResponsibleNodes(key string, count int) []hashing.Node {
+	return s.ring.GetReplicas(key, count)
 }
 
-// AllNodes returns a slice of all nodes
-func (s *NodeStore) AllNodes() []hashing.Node {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+func (s *NodeStore) UpdateLastSeen(nodeID string) error {
+	return s.db.Model(&NodeModel{}).Where("id = ?", nodeID).Update("last_seen", time.Now()).Error
+}
 
-	nodes := make([]hashing.Node, 0, len(s.nodes))
-	for _, n := range s.nodes {
-		nodes = append(nodes, n)
+func (s *NodeStore) RemoveNode(nodeID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	// remove from DB (soft delete)
+	if err := s.db.Delete(&NodeModel{ID: nodeID}).Error; err != nil {
+		return err
 	}
-	return nodes
+	// rebuild ring from DB to drop node reliably
+	var models []NodeModel
+	_ = s.db.Find(&models).Error
+	s.ring = hashing.NewRing(100)
+	for _, m := range models {
+		s.ring.AddNode(hashing.Node{ID: m.ID, Address: m.Address})
+	}
+	return nil
 }

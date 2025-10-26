@@ -27,7 +27,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NodeServiceClient interface {
-	UploadFile(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileChunk, UploadResponse], error)
+	UploadFile(ctx context.Context, in *UploadRequest, opts ...grpc.CallOption) (*UploadResponse, error)
 	DownloadFile(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DownloadResponse], error)
 }
 
@@ -39,22 +39,19 @@ func NewNodeServiceClient(cc grpc.ClientConnInterface) NodeServiceClient {
 	return &nodeServiceClient{cc}
 }
 
-func (c *nodeServiceClient) UploadFile(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[FileChunk, UploadResponse], error) {
+func (c *nodeServiceClient) UploadFile(ctx context.Context, in *UploadRequest, opts ...grpc.CallOption) (*UploadResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &NodeService_ServiceDesc.Streams[0], NodeService_UploadFile_FullMethodName, cOpts...)
+	out := new(UploadResponse)
+	err := c.cc.Invoke(ctx, NodeService_UploadFile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[FileChunk, UploadResponse]{ClientStream: stream}
-	return x, nil
+	return out, nil
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type NodeService_UploadFileClient = grpc.ClientStreamingClient[FileChunk, UploadResponse]
 
 func (c *nodeServiceClient) DownloadFile(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DownloadResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &NodeService_ServiceDesc.Streams[1], NodeService_DownloadFile_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &NodeService_ServiceDesc.Streams[0], NodeService_DownloadFile_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +72,7 @@ type NodeService_DownloadFileClient = grpc.ServerStreamingClient[DownloadRespons
 // All implementations must embed UnimplementedNodeServiceServer
 // for forward compatibility.
 type NodeServiceServer interface {
-	UploadFile(grpc.ClientStreamingServer[FileChunk, UploadResponse]) error
+	UploadFile(context.Context, *UploadRequest) (*UploadResponse, error)
 	DownloadFile(*DownloadRequest, grpc.ServerStreamingServer[DownloadResponse]) error
 	mustEmbedUnimplementedNodeServiceServer()
 }
@@ -87,8 +84,8 @@ type NodeServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedNodeServiceServer struct{}
 
-func (UnimplementedNodeServiceServer) UploadFile(grpc.ClientStreamingServer[FileChunk, UploadResponse]) error {
-	return status.Errorf(codes.Unimplemented, "method UploadFile not implemented")
+func (UnimplementedNodeServiceServer) UploadFile(context.Context, *UploadRequest) (*UploadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UploadFile not implemented")
 }
 func (UnimplementedNodeServiceServer) DownloadFile(*DownloadRequest, grpc.ServerStreamingServer[DownloadResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method DownloadFile not implemented")
@@ -114,12 +111,23 @@ func RegisterNodeServiceServer(s grpc.ServiceRegistrar, srv NodeServiceServer) {
 	s.RegisterService(&NodeService_ServiceDesc, srv)
 }
 
-func _NodeService_UploadFile_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(NodeServiceServer).UploadFile(&grpc.GenericServerStream[FileChunk, UploadResponse]{ServerStream: stream})
+func _NodeService_UploadFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodeServiceServer).UploadFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NodeService_UploadFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodeServiceServer).UploadFile(ctx, req.(*UploadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type NodeService_UploadFileServer = grpc.ClientStreamingServer[FileChunk, UploadResponse]
 
 func _NodeService_DownloadFile_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(DownloadRequest)
@@ -138,13 +146,13 @@ type NodeService_DownloadFileServer = grpc.ServerStreamingServer[DownloadRespons
 var NodeService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "node.NodeService",
 	HandlerType: (*NodeServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
+	Methods: []grpc.MethodDesc{
 		{
-			StreamName:    "UploadFile",
-			Handler:       _NodeService_UploadFile_Handler,
-			ClientStreams: true,
+			MethodName: "UploadFile",
+			Handler:    _NodeService_UploadFile_Handler,
 		},
+	},
+	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "DownloadFile",
 			Handler:       _NodeService_DownloadFile_Handler,

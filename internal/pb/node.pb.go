@@ -73,6 +73,58 @@ func (x *FileChunk) GetData() []byte {
 	return nil
 }
 
+type UploadRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	FileKey       string                 `protobuf:"bytes,1,opt,name=file_key,json=fileKey,proto3" json:"file_key,omitempty"`
+	Data          []byte                 `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadRequest) Reset() {
+	*x = UploadRequest{}
+	mi := &file_internal_pb_node_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadRequest) ProtoMessage() {}
+
+func (x *UploadRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_pb_node_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadRequest.ProtoReflect.Descriptor instead.
+func (*UploadRequest) Descriptor() ([]byte, []int) {
+	return file_internal_pb_node_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *UploadRequest) GetFileKey() string {
+	if x != nil {
+		return x.FileKey
+	}
+	return ""
+}
+
+func (x *UploadRequest) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 type UploadResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
@@ -83,7 +135,7 @@ type UploadResponse struct {
 
 func (x *UploadResponse) Reset() {
 	*x = UploadResponse{}
-	mi := &file_internal_pb_node_proto_msgTypes[1]
+	mi := &file_internal_pb_node_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -95,7 +147,7 @@ func (x *UploadResponse) String() string {
 func (*UploadResponse) ProtoMessage() {}
 
 func (x *UploadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_pb_node_proto_msgTypes[1]
+	mi := &file_internal_pb_node_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -108,7 +160,7 @@ func (x *UploadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadResponse.ProtoReflect.Descriptor instead.
 func (*UploadResponse) Descriptor() ([]byte, []int) {
-	return file_internal_pb_node_proto_rawDescGZIP(), []int{1}
+	return file_internal_pb_node_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *UploadResponse) GetSuccess() bool {
@@ -134,7 +186,7 @@ type DownloadRequest struct {
 
 func (x *DownloadRequest) Reset() {
 	*x = DownloadRequest{}
-	mi := &file_internal_pb_node_proto_msgTypes[2]
+	mi := &file_internal_pb_node_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -146,7 +198,7 @@ func (x *DownloadRequest) String() string {
 func (*DownloadRequest) ProtoMessage() {}
 
 func (x *DownloadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_pb_node_proto_msgTypes[2]
+	mi := &file_internal_pb_node_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -159,7 +211,7 @@ func (x *DownloadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DownloadRequest.ProtoReflect.Descriptor instead.
 func (*DownloadRequest) Descriptor() ([]byte, []int) {
-	return file_internal_pb_node_proto_rawDescGZIP(), []int{2}
+	return file_internal_pb_node_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *DownloadRequest) GetFilename() string {
@@ -178,7 +230,7 @@ type DownloadResponse struct {
 
 func (x *DownloadResponse) Reset() {
 	*x = DownloadResponse{}
-	mi := &file_internal_pb_node_proto_msgTypes[3]
+	mi := &file_internal_pb_node_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -190,7 +242,7 @@ func (x *DownloadResponse) String() string {
 func (*DownloadResponse) ProtoMessage() {}
 
 func (x *DownloadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_pb_node_proto_msgTypes[3]
+	mi := &file_internal_pb_node_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -203,7 +255,7 @@ func (x *DownloadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DownloadResponse.ProtoReflect.Descriptor instead.
 func (*DownloadResponse) Descriptor() ([]byte, []int) {
-	return file_internal_pb_node_proto_rawDescGZIP(), []int{3}
+	return file_internal_pb_node_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *DownloadResponse) GetData() []byte {
@@ -220,6 +272,9 @@ const file_internal_pb_node_proto_rawDesc = "" +
 	"\x16internal/pb/node.proto\x12\x04node\";\n" +
 	"\tFileChunk\x12\x1a\n" +
 	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x12\n" +
+	"\x04data\x18\x02 \x01(\fR\x04data\">\n" +
+	"\rUploadRequest\x12\x19\n" +
+	"\bfile_key\x18\x01 \x01(\tR\afileKey\x12\x12\n" +
 	"\x04data\x18\x02 \x01(\fR\x04data\"D\n" +
 	"\x0eUploadResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
@@ -227,10 +282,10 @@ const file_internal_pb_node_proto_rawDesc = "" +
 	"\x0fDownloadRequest\x12\x1a\n" +
 	"\bfilename\x18\x01 \x01(\tR\bfilename\"&\n" +
 	"\x10DownloadResponse\x12\x12\n" +
-	"\x04data\x18\x01 \x01(\fR\x04data2\x85\x01\n" +
-	"\vNodeService\x125\n" +
+	"\x04data\x18\x01 \x01(\fR\x04data2\x87\x01\n" +
+	"\vNodeService\x127\n" +
 	"\n" +
-	"UploadFile\x12\x0f.node.FileChunk\x1a\x14.node.UploadResponse(\x01\x12?\n" +
+	"UploadFile\x12\x13.node.UploadRequest\x1a\x14.node.UploadResponse\x12?\n" +
 	"\fDownloadFile\x12\x15.node.DownloadRequest\x1a\x16.node.DownloadResponse0\x01B\rZ\vinternal/pbb\x06proto3"
 
 var (
@@ -245,18 +300,19 @@ func file_internal_pb_node_proto_rawDescGZIP() []byte {
 	return file_internal_pb_node_proto_rawDescData
 }
 
-var file_internal_pb_node_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_internal_pb_node_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_internal_pb_node_proto_goTypes = []any{
 	(*FileChunk)(nil),        // 0: node.FileChunk
-	(*UploadResponse)(nil),   // 1: node.UploadResponse
-	(*DownloadRequest)(nil),  // 2: node.DownloadRequest
-	(*DownloadResponse)(nil), // 3: node.DownloadResponse
+	(*UploadRequest)(nil),    // 1: node.UploadRequest
+	(*UploadResponse)(nil),   // 2: node.UploadResponse
+	(*DownloadRequest)(nil),  // 3: node.DownloadRequest
+	(*DownloadResponse)(nil), // 4: node.DownloadResponse
 }
 var file_internal_pb_node_proto_depIdxs = []int32{
-	0, // 0: node.NodeService.UploadFile:input_type -> node.FileChunk
-	2, // 1: node.NodeService.DownloadFile:input_type -> node.DownloadRequest
-	1, // 2: node.NodeService.UploadFile:output_type -> node.UploadResponse
-	3, // 3: node.NodeService.DownloadFile:output_type -> node.DownloadResponse
+	1, // 0: node.NodeService.UploadFile:input_type -> node.UploadRequest
+	3, // 1: node.NodeService.DownloadFile:input_type -> node.DownloadRequest
+	2, // 2: node.NodeService.UploadFile:output_type -> node.UploadResponse
+	4, // 3: node.NodeService.DownloadFile:output_type -> node.DownloadResponse
 	2, // [2:4] is the sub-list for method output_type
 	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -275,7 +331,7 @@ func file_internal_pb_node_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_internal_pb_node_proto_rawDesc), len(file_internal_pb_node_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

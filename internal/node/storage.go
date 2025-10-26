@@ -12,11 +12,11 @@ type FileStorage struct {
 }
 
 // NewFileStorage creates a storage folder for the node
-func NewFileStorage(basePath string) (*FileStorage, error) {
+func NewFileStorage(basePath string) *FileStorage {
 	if err := os.MkdirAll(basePath, os.ModePerm); err != nil {
-		return nil, fmt.Errorf("failed to create storage dir: %v", err)
+		panic(fmt.Errorf("failed to create storage dir: %v", err))
 	}
-	return &FileStorage{basePath: basePath}, nil
+	return &FileStorage{basePath: basePath}
 }
 
 // SaveFile saves a file chunk to disk

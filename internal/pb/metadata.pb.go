@@ -337,6 +337,190 @@ func (x *ListNodesResponse) GetNodes() []*NodeInfo {
 	return nil
 }
 
+type GetReplicasRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	FileKey       string                 `protobuf:"bytes,1,opt,name=file_key,json=fileKey,proto3" json:"file_key,omitempty"`
+	Replicas      int32                  `protobuf:"varint,2,opt,name=replicas,proto3" json:"replicas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetReplicasRequest) Reset() {
+	*x = GetReplicasRequest{}
+	mi := &file_internal_pb_metadata_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetReplicasRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetReplicasRequest) ProtoMessage() {}
+
+func (x *GetReplicasRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_pb_metadata_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetReplicasRequest.ProtoReflect.Descriptor instead.
+func (*GetReplicasRequest) Descriptor() ([]byte, []int) {
+	return file_internal_pb_metadata_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetReplicasRequest) GetFileKey() string {
+	if x != nil {
+		return x.FileKey
+	}
+	return ""
+}
+
+func (x *GetReplicasRequest) GetReplicas() int32 {
+	if x != nil {
+		return x.Replicas
+	}
+	return 0
+}
+
+type GetReplicasResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Nodes         []*NodeInfo            `protobuf:"bytes,1,rep,name=nodes,proto3" json:"nodes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetReplicasResponse) Reset() {
+	*x = GetReplicasResponse{}
+	mi := &file_internal_pb_metadata_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetReplicasResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetReplicasResponse) ProtoMessage() {}
+
+func (x *GetReplicasResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_pb_metadata_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetReplicasResponse.ProtoReflect.Descriptor instead.
+func (*GetReplicasResponse) Descriptor() ([]byte, []int) {
+	return file_internal_pb_metadata_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetReplicasResponse) GetNodes() []*NodeInfo {
+	if x != nil {
+		return x.Nodes
+	}
+	return nil
+}
+
+type HeartbeatRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NodeId        string                 `protobuf:"bytes,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HeartbeatRequest) Reset() {
+	*x = HeartbeatRequest{}
+	mi := &file_internal_pb_metadata_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HeartbeatRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HeartbeatRequest) ProtoMessage() {}
+
+func (x *HeartbeatRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_pb_metadata_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HeartbeatRequest.ProtoReflect.Descriptor instead.
+func (*HeartbeatRequest) Descriptor() ([]byte, []int) {
+	return file_internal_pb_metadata_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *HeartbeatRequest) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+type HeartbeatResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ok            bool                   `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HeartbeatResponse) Reset() {
+	*x = HeartbeatResponse{}
+	mi := &file_internal_pb_metadata_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HeartbeatResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HeartbeatResponse) ProtoMessage() {}
+
+func (x *HeartbeatResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_pb_metadata_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HeartbeatResponse.ProtoReflect.Descriptor instead.
+func (*HeartbeatResponse) Descriptor() ([]byte, []int) {
+	return file_internal_pb_metadata_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *HeartbeatResponse) GetOk() bool {
+	if x != nil {
+		return x.Ok
+	}
+	return false
+}
+
 var File_internal_pb_metadata_proto protoreflect.FileDescriptor
 
 const file_internal_pb_metadata_proto_rawDesc = "" +
@@ -356,11 +540,22 @@ const file_internal_pb_metadata_proto_rawDesc = "" +
 	"\x04node\x18\x01 \x01(\v2\x12.metadata.NodeInfoR\x04node\"\x12\n" +
 	"\x10ListNodesRequest\"=\n" +
 	"\x11ListNodesResponse\x12(\n" +
-	"\x05nodes\x18\x01 \x03(\v2\x12.metadata.NodeInfoR\x05nodes2\xed\x01\n" +
+	"\x05nodes\x18\x01 \x03(\v2\x12.metadata.NodeInfoR\x05nodes\"K\n" +
+	"\x12GetReplicasRequest\x12\x19\n" +
+	"\bfile_key\x18\x01 \x01(\tR\afileKey\x12\x1a\n" +
+	"\breplicas\x18\x02 \x01(\x05R\breplicas\"?\n" +
+	"\x13GetReplicasResponse\x12(\n" +
+	"\x05nodes\x18\x01 \x03(\v2\x12.metadata.NodeInfoR\x05nodes\"+\n" +
+	"\x10HeartbeatRequest\x12\x17\n" +
+	"\anode_id\x18\x01 \x01(\tR\x06nodeId\"#\n" +
+	"\x11HeartbeatResponse\x12\x0e\n" +
+	"\x02ok\x18\x01 \x01(\bR\x02ok2\x86\x03\n" +
 	"\x0fMetadataService\x12M\n" +
 	"\fRegisterNode\x12\x1d.metadata.RegisterNodeRequest\x1a\x1e.metadata.RegisterNodeResponse\x12E\n" +
-	"\x0eGetNodeForFile\x12\x18.metadata.GetNodeRequest\x1a\x19.metadata.GetNodeResponse\x12D\n" +
-	"\tListNodes\x12\x1a.metadata.ListNodesRequest\x1a\x1b.metadata.ListNodesResponseB\rZ\vinternal/pbb\x06proto3"
+	"\x0eGetNodeForFile\x12\x18.metadata.GetNodeRequest\x1a\x19.metadata.GetNodeResponse\x12Q\n" +
+	"\x12GetReplicasForFile\x12\x1c.metadata.GetReplicasRequest\x1a\x1d.metadata.GetReplicasResponse\x12D\n" +
+	"\tListNodes\x12\x1a.metadata.ListNodesRequest\x1a\x1b.metadata.ListNodesResponse\x12D\n" +
+	"\tHeartbeat\x12\x1a.metadata.HeartbeatRequest\x1a\x1b.metadata.HeartbeatResponseB\rZ\vinternal/pbb\x06proto3"
 
 var (
 	file_internal_pb_metadata_proto_rawDescOnce sync.Once
@@ -374,7 +569,7 @@ func file_internal_pb_metadata_proto_rawDescGZIP() []byte {
 	return file_internal_pb_metadata_proto_rawDescData
 }
 
-var file_internal_pb_metadata_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_internal_pb_metadata_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_internal_pb_metadata_proto_goTypes = []any{
 	(*NodeInfo)(nil),             // 0: metadata.NodeInfo
 	(*RegisterNodeRequest)(nil),  // 1: metadata.RegisterNodeRequest
@@ -383,22 +578,31 @@ var file_internal_pb_metadata_proto_goTypes = []any{
 	(*GetNodeResponse)(nil),      // 4: metadata.GetNodeResponse
 	(*ListNodesRequest)(nil),     // 5: metadata.ListNodesRequest
 	(*ListNodesResponse)(nil),    // 6: metadata.ListNodesResponse
+	(*GetReplicasRequest)(nil),   // 7: metadata.GetReplicasRequest
+	(*GetReplicasResponse)(nil),  // 8: metadata.GetReplicasResponse
+	(*HeartbeatRequest)(nil),     // 9: metadata.HeartbeatRequest
+	(*HeartbeatResponse)(nil),    // 10: metadata.HeartbeatResponse
 }
 var file_internal_pb_metadata_proto_depIdxs = []int32{
-	0, // 0: metadata.RegisterNodeRequest.node:type_name -> metadata.NodeInfo
-	0, // 1: metadata.GetNodeResponse.node:type_name -> metadata.NodeInfo
-	0, // 2: metadata.ListNodesResponse.nodes:type_name -> metadata.NodeInfo
-	1, // 3: metadata.MetadataService.RegisterNode:input_type -> metadata.RegisterNodeRequest
-	3, // 4: metadata.MetadataService.GetNodeForFile:input_type -> metadata.GetNodeRequest
-	5, // 5: metadata.MetadataService.ListNodes:input_type -> metadata.ListNodesRequest
-	2, // 6: metadata.MetadataService.RegisterNode:output_type -> metadata.RegisterNodeResponse
-	4, // 7: metadata.MetadataService.GetNodeForFile:output_type -> metadata.GetNodeResponse
-	6, // 8: metadata.MetadataService.ListNodes:output_type -> metadata.ListNodesResponse
-	6, // [6:9] is the sub-list for method output_type
-	3, // [3:6] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	0,  // 0: metadata.RegisterNodeRequest.node:type_name -> metadata.NodeInfo
+	0,  // 1: metadata.GetNodeResponse.node:type_name -> metadata.NodeInfo
+	0,  // 2: metadata.ListNodesResponse.nodes:type_name -> metadata.NodeInfo
+	0,  // 3: metadata.GetReplicasResponse.nodes:type_name -> metadata.NodeInfo
+	1,  // 4: metadata.MetadataService.RegisterNode:input_type -> metadata.RegisterNodeRequest
+	3,  // 5: metadata.MetadataService.GetNodeForFile:input_type -> metadata.GetNodeRequest
+	7,  // 6: metadata.MetadataService.GetReplicasForFile:input_type -> metadata.GetReplicasRequest
+	5,  // 7: metadata.MetadataService.ListNodes:input_type -> metadata.ListNodesRequest
+	9,  // 8: metadata.MetadataService.Heartbeat:input_type -> metadata.HeartbeatRequest
+	2,  // 9: metadata.MetadataService.RegisterNode:output_type -> metadata.RegisterNodeResponse
+	4,  // 10: metadata.MetadataService.GetNodeForFile:output_type -> metadata.GetNodeResponse
+	8,  // 11: metadata.MetadataService.GetReplicasForFile:output_type -> metadata.GetReplicasResponse
+	6,  // 12: metadata.MetadataService.ListNodes:output_type -> metadata.ListNodesResponse
+	10, // 13: metadata.MetadataService.Heartbeat:output_type -> metadata.HeartbeatResponse
+	9,  // [9:14] is the sub-list for method output_type
+	4,  // [4:9] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_internal_pb_metadata_proto_init() }
@@ -412,7 +616,7 @@ func file_internal_pb_metadata_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_internal_pb_metadata_proto_rawDesc), len(file_internal_pb_metadata_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

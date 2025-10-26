@@ -8,6 +8,11 @@ message FileChunk {
   bytes data = 2;
 }
 
+message UploadRequest {
+  string file_key = 1;
+  bytes data = 2;
+}
+
 message UploadResponse {
   bool success = 1;
   string message = 2;
@@ -22,6 +27,6 @@ message DownloadResponse {
 }
 
 service NodeService {
-  rpc UploadFile(stream FileChunk) returns (UploadResponse);
+  rpc UploadFile(UploadRequest) returns (UploadResponse);
   rpc DownloadFile(DownloadRequest) returns (stream DownloadResponse);
 }
